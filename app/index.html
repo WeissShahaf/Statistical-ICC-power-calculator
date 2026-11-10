@@ -1,0 +1,294 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>ICC calculator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&family=IBM+Plex+Mono:wght@400;600&family=Source+Serif+4:opsz,wght@8..60,600&display=swap">
+<style>
+:root{
+  --bg:#F7F5F0; --panel:#FFFFFF; --ink:#1B2A38; --text:#3A4650; --muted:#6F767C; --line:#E3E1D8;
+  --accent:#2E7D74; --accent-soft:#D5E8E4; --warn:#B0483A; --sand:#F3D9A8; --ref:#9AA3A8; --band:#EDE6D6;
+  --chip:#EEF1F0;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#141C24; --panel:#1B2632; --ink:#EEF1F2; --text:#C9D1D5; --muted:#8E989E; --line:#2C3946;
+    --accent:#5FB8AC; --accent-soft:#1F3B39; --warn:#E07A69; --sand:#6B5A36; --ref:#5E6A72; --band:#2A2A22;
+    --chip:#243140; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#141C24; --panel:#1B2632; --ink:#EEF1F2; --text:#C9D1D5; --muted:#8E989E; --line:#2C3946;
+  --accent:#5FB8AC; --accent-soft:#1F3B39; --warn:#E07A69; --sand:#6B5A36; --ref:#5E6A72; --band:#2A2A22;
+  --chip:#243140; color-scheme:dark;
+}
+*{box-sizing:border-box}
+a{color:var(--accent);font-weight:600}
+body{background:var(--bg);color:var(--text);font:15px/1.5 'IBM Plex Sans',Arial,sans-serif;padding-inline:16px;padding-block:24px 48px}
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+header{display:flex;flex-direction:column;gap:6px}
+.eyebrow{font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+h1{font-family:'Source Serif 4',Georgia,serif;font-weight:600;font-size:clamp(26px,3.4vw,36px);line-height:1.15;color:var(--ink);margin:0;text-wrap:balance}
+.lede{max-width:72ch;margin:0}
+.grid{display:grid;grid-template-columns:340px 1fr;gap:20px;align-items:start}
+@media (max-width:880px){.grid{grid-template-columns:1fr}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px}
+.controls{display:flex;flex-direction:column;gap:18px}
+.ctl{display:flex;flex-direction:column;gap:8px}
+.ctl label,.ctl .lab{font-weight:600;color:var(--ink);display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.ctl .val{font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums;color:var(--accent);font-weight:600}
+.hint{font-size:13px;color:var(--muted);margin:0}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font:13px 'IBM Plex Sans',Arial,sans-serif;border:1px solid var(--line);background:var(--chip);color:var(--text);border-radius:999px;padding:3px 10px;cursor:pointer}
+.chip[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:var(--panel)}
+.chip:focus-visible,.seg button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.seg{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{font:600 13px 'IBM Plex Sans',Arial,sans-serif;padding:8px 6px;border:0;background:var(--panel);color:var(--text);cursor:pointer}
+.seg button[aria-pressed=true]{background:var(--ink);color:var(--bg)}
+.main{display:flex;flex-direction:column;gap:20px;min-width:0}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media (max-width:560px){.tiles{grid-template-columns:1fr}}
+.tile{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:2px}
+.tile.key{background:var(--ink);border-color:var(--ink)}
+.tile.key .big,.tile.key .tl{color:var(--bg)}
+.tile.key .ts{color:var(--ref)}
+.tl{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.big{font-family:'IBM Plex Mono',monospace;font-size:34px;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums;line-height:1.15}
+.ts{font-size:13px;color:var(--muted)}
+.charts{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media (max-width:1060px){.charts{grid-template-columns:1fr}}
+.chart h2{font-size:15px;font-weight:700;color:var(--ink);margin:0 0 4px}
+.chart svg{width:100%;height:auto;display:block}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:12px;color:var(--muted);margin-top:6px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:18px;height:0;border-top:3px solid var(--accent);display:inline-block}
+.sw.ref{border-top:2px solid var(--ref)} .sw.dash{border-top:2px dashed var(--warn)} .sw.dot{border-top:2px dotted var(--ink)}.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line)}
+th{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+td.num{font-family:'IBM Plex Mono',monospace}
+tr.sel td{background:var(--accent-soft)}
+.src{font-size:13px;color:var(--muted);max-width:90ch;display:flex;flex-direction:column;gap:6px}
+.src p{margin:0}
+svg text{font-family:'IBM Plex Sans',Arial,sans-serif;fill:var(--muted);font-size:15px}
+svg .axis{stroke:var(--line)} svg .gridl{stroke:var(--line);stroke-width:1}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <div id="viewCalc">
+  <header>
+    <span class="eyebrow">Power planning for clustered data</span>
+    <h1>How many animals are needed for 80% power?</h1>
+    <p class="lede">Move the sliders to see how power changes with the number of animals and the number of cells per animal. Cells come in clusters (one animal), so the share of the variance that lies between animals (the ICC) sets a ceiling that more cells cannot lift.</p>
+  </header>
+
+  <div class="grid">
+    <aside class="panel controls" aria-label="Settings">
+      <div class="ctl">
+        <span class="lab">Question</span>
+        <div class="seg" role="group" aria-label="Question">
+          <button id="mTwo" aria-pressed="true">Two groups of animals</button>
+          <button id="mOne" aria-pressed="false">One effect across animals</button>
+        </div>
+        <p class="hint" id="modeHint"></p>
+      </div>
+
+      <div class="ctl">
+        <label for="icc">ICC (share of variance between animals) <span class="val" id="iccV"></span></label>
+        <input id="icc" type="range" min="0" max="1000" step="1">
+        <div class="chips" id="iccChips"></div>
+        <p class="hint">ICC = between-animal variance / (between-animal + within-animal variance). The chips are generic planning values (low, medium, high); use the slider for any other value.</p>
+      </div>
+
+      <div class="ctl">
+        <label for="d">Effect size d <span class="val" id="dV"></span></label>
+        <input id="d" type="range" min="0.1" max="1.5" step="0.01">
+        <div class="chips" id="dChips"></div>
+        <p class="hint">d = difference in means divided by the standard deviation. 0.2 is small, 0.5 is medium, 0.8 is large.</p>
+      </div>
+
+      <div class="ctl">
+        <label for="k"><span id="kLab">Animals per group</span> <span class="val" id="kV"></span></label>
+        <input id="k" type="range" min="2" max="40" step="1">
+      </div>
+
+      <div class="ctl">
+        <label for="n">Cells per animal <span class="val" id="nV"></span></label>
+        <input id="n" type="range" min="0" max="1000" step="1">
+        <p class="hint">Cells (or other repeated measurements) per animal, on a log scale from 5 to 2000. Assumed equal for every animal.</p>
+      </div>
+    </aside>
+
+    <section class="main">
+      <div class="tiles">
+        <div class="tile key"><span class="tl">Power now</span><span class="big" id="tPow"></span><span class="ts" id="tPowS"></span></div>
+        <div class="tile"><span class="tl">Animals for 80%</span><span class="big" id="tNeed"></span><span class="ts" id="tNeedS"></span></div>
+        <div class="tile"><span class="tl">Ceiling with endless cells</span><span class="big" id="tCeil"></span><span class="ts" id="tCeilS"></span></div>
+      </div>
+
+      <div class="charts">
+        <div class="panel chart">
+          <h2 id="c1t">Power against number of animals</h2>
+          <svg id="c1" viewBox="0 0 520 330" role="img" aria-label="Power against number of animals"></svg>
+          <div class="legend">
+            <span><i class="sw"></i>your settings</span>
+            <span><i class="sw ref"></i>ICC 0.05 / 0.1 / 0.3</span>
+            <span><i class="sw dash"></i>80%</span>
+          </div>
+        </div>
+        <div class="panel chart">
+          <h2 id="c2t">Power against cells per animal</h2>
+          <svg id="c2" viewBox="0 0 520 330" role="img" aria-label="Power against cells per animal"></svg>
+          <div class="legend">
+            <span><i class="sw"></i>your settings</span>
+            <span><i class="sw dot"></i>ceiling (endless cells)</span>          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2 style="font-size:15px;font-weight:700;color:var(--ink);margin:0 0 8px">Animals needed for 80%, for each ICC, at your d and cells per animal</h2>
+        <div class="tablewrap"><table id="tbl"><thead><tr><th>ICC</th><th>Planning value</th><th id="thNeed">Animals per group</th><th id="thNow">Power at your animals</th></tr></thead><tbody></tbody></table></div>
+      </div>
+    </section>
+  </div>
+
+  <div class="src">
+    <p>The curves are computed, not measured. Standard error of the difference (Aarts et al., 2014, Box 3): SE² = 2[1 + (n − 1)·ICC] / (k·n) for two groups of k animals, or [1 + (n − 1)·ICC] / (k·n) for one effect measured in each of k animals. Power is two-sided, α = 0.05, from the noncentral t distribution with 2k − 2 (two groups) or k − 1 (one effect) degrees of freedom. With few animals this is lower than the normal approximation.</p>
+    <p>Assumptions: roughly normal outcome, equal cells per animal, one effect size. For a within-animal effect, the ICC that matters is how much the effect itself varies between animals, which can differ from the ICC of the raw measure.</p>
+  </div>
+</div>
+</div>
+
+<script>
+// ---------- maths ----------
+function lgamma(x){const g=7,c=[0.99999999999980993,676.5203681218851,-1259.1392167224028,771.32342877765313,-176.61502916214059,12.507343278686905,-0.13857109526572012,9.9843695780195716e-6,1.5056327351493116e-7];
+ if(x<0.5)return Math.log(Math.PI/Math.sin(Math.PI*x))-lgamma(1-x);x-=1;let a=c[0];const t=x+g+0.5;for(let i=1;i<9;i++)a+=c[i]/(x+i);
+ return 0.5*Math.log(2*Math.PI)+(x+0.5)*Math.log(t)-t+Math.log(a);}
+function Phi(z){const x=Math.abs(z)/Math.SQRT2,t=1/(1+0.5*x);
+ const y=t*Math.exp(-x*x-1.26551223+t*(1.00002368+t*(0.37409196+t*(0.09678418+t*(-0.18628806+t*(0.27886807+t*(-1.13520398+t*(1.48851587+t*(-0.82215223+t*0.17087277)))))))));
+ return z>=0?1-0.5*y:0.5*y;}
+const GRID={};
+function grid(df){ if(GRID[df])return GRID[df];
+ const N=3000,smax=1+12/Math.sqrt(2*df),h=smax/N,lc=(df/2)*Math.log(df)-(df/2-1)*Math.log(2)-lgamma(df/2);
+ const s=new Float64Array(N+1),w=new Float64Array(N+1);
+ for(let i=0;i<=N;i++){const si=i*h;s[i]=si;const f=si===0?(df===1?Math.exp(lc):0):Math.exp(lc+(df-1)*Math.log(si)-df*si*si/2);w[i]=f*h/3*(i===0||i===N?1:(i%2?4:2));}
+ return GRID[df]={s,w};}
+function tail(c,df,delta){const {s,w}=grid(df);let p=0;for(let i=0;i<s.length;i++)p+=w[i]*(Phi(delta-c*s[i])+Phi(-c*s[i]-delta));return p;}
+const TC={};function tcrit(df){if(TC[df])return TC[df];let lo=0,hi=50;for(let i=0;i<50;i++){const m=(lo+hi)/2;if(tail(m,df,0)>0.05)lo=m;else hi=m;}return TC[df]=(lo+hi)/2;}
+function se2(k,n,icc,mode){const v=(1+(n-1)*icc)/(k*n);return mode==='two'?2*v:v;}
+function dfOf(k,mode){return mode==='two'?2*k-2:k-1;}
+function power(k,n,icc,d,mode){const df=dfOf(k,mode);if(df<1)return NaN;return Math.min(1,tail(tcrit(df),df,d/Math.sqrt(se2(k,n,icc,mode))));}
+function ceiling(k,icc,d,mode){ // n -> infinity: SE^2 -> (2)ICC/k
+ const df=dfOf(k,mode);if(df<1)return NaN;const v=(mode==='two'?2:1)*icc/k;if(v<=0)return 1;return Math.min(1,tail(tcrit(df),df,d/Math.sqrt(v)));}
+function kNeeded(n,icc,d,mode,target=0.8,kmax=500){ // power rises with k: binary search
+ const kmin=2;if(power(kmin,n,icc,d,mode)>=target)return kmin;if(power(kmax,n,icc,d,mode)<target)return Infinity;
+ let lo=kmin,hi=kmax;while(hi-lo>1){const m=(lo+hi)>>1;if(power(m,n,icc,d,mode)>=target)hi=m;else lo=m;}return hi;}
+
+// ---------- state ----------
+const ICC_PRESETS=[
+ {v:0.05,label:'0.05',name:'ICC 0.05',src:'Low (planning value)'},
+ {v:0.1,label:'0.1',name:'ICC 0.1',src:'Medium (planning value)'},
+ {v:0.3,label:'0.3',name:'ICC 0.3',src:'High (planning value)'},
+];
+const S={mode:'one',icc:0.1,d:0.5,k:8,n:20};  // default: one effect across animals, 8 animals, 20 cells each
+const $=id=>document.getElementById(id);
+// ICC slider: 0..1000 -> 0.001..0.8 on a log scale; n slider: 0..1000 -> 5..2000 log
+const iccFrom=u=>0.001*Math.pow(800,u/1000), iccTo=v=>Math.round(1000*Math.log(v/0.001)/Math.log(800));
+const nFrom=u=>Math.round(5*Math.pow(400,u/1000)), nTo=v=>Math.round(1000*Math.log(v/5)/Math.log(400));
+const fmtICC=v=>v<0.01?v.toFixed(3):v<0.1?v.toFixed(3).replace(/0$/,''):v.toFixed(2).replace(/0$/,'');
+const pct=p=>isNaN(p)?'–':(p>=0.995?'>99%':Math.round(p*100)+'%');
+
+function chip(parent,text,title,onClick){const b=document.createElement('button');b.className='chip';b.type='button';b.textContent=text;b.title=title;b.addEventListener('click',onClick);parent.appendChild(b);return b;}
+const iccChipEls=ICC_PRESETS.map(p=>chip($('iccChips'),p.name,p.label+' - '+p.src,()=>{S.icc=p.v;render();}));
+const D_PRESETS=[
+ {v:0.2,label:'d = 0.2',src:'Small effect'},
+ {v:0.5,label:'d = 0.5',src:'Medium effect'},
+ {v:0.8,label:'d = 0.8',src:'Large effect'},
+];
+const dChipEls=D_PRESETS.map(p=>chip($('dChips'),p.label,p.src,()=>{S.d=p.v;render();}));
+
+$('icc').addEventListener('input',e=>{S.icc=+iccFrom(+e.target.value).toPrecision(3);render();});
+$('d').addEventListener('input',e=>{S.d=+e.target.value;render();});
+$('k').addEventListener('input',e=>{S.k=+e.target.value;render();});
+$('n').addEventListener('input',e=>{S.n=nFrom(+e.target.value);render();});
+$('mTwo').addEventListener('click',()=>{S.mode='two';render();});
+$('mOne').addEventListener('click',()=>{S.mode='one';render();});
+
+// ---------- charts ----------
+const NS='http://www.w3.org/2000/svg';
+function el(tag,attrs,parent){const e=document.createElementNS(NS,tag);for(const a in attrs)e.setAttribute(a,attrs[a]);parent&&parent.appendChild(e);return e;}
+function css(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim();}
+const M={l:54,r:16,t:16,b:48},W=520,H=330,PW=W-M.l-M.r,PH=H-M.t-M.b;
+function frame(svg,xticks,xs,xlabel){svg.innerHTML='';
+ const g=el('g',{},svg);
+ [0,0.2,0.4,0.6,0.8,1].forEach(p=>{const y=M.t+PH*(1-p);el('line',{x1:M.l,x2:M.l+PW,y1:y,y2:y,class:'gridl'},g);const t=el('text',{x:M.l-8,y:y+4,'text-anchor':'end'},g);t.textContent=Math.round(p*100)+'%';});
+ xticks.forEach(v=>{const x=xs(v);el('line',{x1:x,x2:x,y1:M.t+PH,y2:M.t+PH+5,class:'axis'},g);const t=el('text',{x,y:M.t+PH+19,'text-anchor':'middle'},g);t.textContent=v;});
+ el('line',{x1:M.l,x2:M.l+PW,y1:M.t+PH,y2:M.t+PH,class:'axis'},g);
+ const xl=el('text',{x:M.l+PW/2,y:H-6,'text-anchor':'middle'},g);xl.textContent=xlabel;
+ const y80=M.t+PH*0.2;el('line',{x1:M.l,x2:M.l+PW,y1:y80,y2:y80,stroke:css('--warn'),'stroke-width':1.5,'stroke-dasharray':'5 4'},g);
+ return g;}
+const ys=p=>M.t+PH*(1-p);
+function path(pts){return pts.filter(p=>!isNaN(p[1])).map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');}
+
+function drawC1(){const svg=$('c1');const kmin=2,kmax=30;const xs=k=>M.l+PW*(k-kmin)/(kmax-kmin);
+ const unit=S.mode==='two'?'animals per group':'animals';
+ $('c1t').textContent='Power against number of '+unit+' ('+S.n+' cells each)';
+ const g=frame(svg,[2,5,10,15,20,25,30],xs,'Number of '+unit);
+ [0.05,0.1,0.3].forEach(icc=>{const pts=[];for(let k=kmin;k<=kmax;k++)pts.push([xs(k),ys(power(k,S.n,icc,S.d,S.mode))]);
+   el('path',{d:path(pts),fill:'none',stroke:css('--ref'),'stroke-width':1.5},g);
+   const lk=4,lp=pts[lk-kmin];const t=el('text',{x:lp[0]+8,y:lp[1]+5},g);t.textContent='ICC '+icc;});
+ const pts=[];for(let k=kmin;k<=kmax;k++)pts.push([xs(k),ys(power(k,S.n,S.icc,S.d,S.mode))]);
+ el('path',{d:path(pts),fill:'none',stroke:css('--accent'),'stroke-width':3,'stroke-linejoin':'round'},g);
+ if(S.k<=kmax){const p=power(S.k,S.n,S.icc,S.d,S.mode);el('circle',{cx:xs(S.k),cy:ys(p),r:6,fill:css('--accent'),stroke:css('--panel'),'stroke-width':2},g);}
+}
+function drawC2(){const svg=$('c2');const nmin=5,nmax=2000;const lx=Math.log(nmin),rx=Math.log(nmax);const xs=n=>M.l+PW*(Math.log(n)-lx)/(rx-lx);
+ const unit=S.mode==='two'?' animals per group':' animals';
+ $('c2t').textContent='Power against cells per animal ('+S.k+unit+')';
+ const g=frame(svg,[5,10,20,50,100,200,500,1000,2000],xs,'Cells per animal (log scale)');
+ const c=ceiling(S.k,S.icc,S.d,S.mode);
+ if(!isNaN(c)){el('line',{x1:M.l,x2:M.l+PW,y1:ys(c),y2:ys(c),stroke:css('--ink'),'stroke-width':1.5,'stroke-dasharray':'1 4','stroke-linecap':'round'},g);
+   const t=el('text',{x:M.l+PW-2,y:ys(c)-6,'text-anchor':'end'},g);t.textContent='ceiling '+pct(c);t.setAttribute('style','fill:'+css('--ink'));}
+ const pts=[];for(let i=0;i<=80;i++){const n=Math.round(Math.exp(lx+(rx-lx)*i/80));pts.push([xs(n),ys(power(S.k,n,S.icc,S.d,S.mode))]);}
+ el('path',{d:path(pts),fill:'none',stroke:css('--accent'),'stroke-width':3,'stroke-linejoin':'round'},g);
+ const p=power(S.k,S.n,S.icc,S.d,S.mode);if(!isNaN(p))el('circle',{cx:xs(Math.min(nmax,Math.max(nmin,S.n))),cy:ys(p),r:6,fill:css('--accent'),stroke:css('--panel'),'stroke-width':2},g);
+}
+
+// ---------- render ----------
+function render(){
+ const two=S.mode==='two';
+ $('mTwo').setAttribute('aria-pressed',two);$('mOne').setAttribute('aria-pressed',!two);
+ $('modeHint').textContent=two?'Compare two groups of k animals each (e.g. two genotypes). Degrees of freedom 2k − 2.'
+   :'One effect measured in every animal (e.g. region A vs B, response vs baseline), tested across k animals. Degrees of freedom k − 1.';
+ $('kLab').textContent=two?'Animals per group':'Animals (total)';
+ $('thNeed').textContent=two?'Animals per group for 80%':'Animals for 80%';
+ $('icc').value=iccTo(S.icc);$('iccV').textContent=fmtICC(S.icc);
+ $('d').value=S.d;$('dV').textContent=S.d.toFixed(2);
+ $('k').value=S.k;$('kV').textContent=S.k;
+ $('n').value=nTo(S.n);$('nV').textContent=S.n;
+ iccChipEls.forEach((b,i)=>b.setAttribute('aria-pressed',Math.abs(ICC_PRESETS[i].v-S.icc)<1e-9));
+ dChipEls.forEach((b,i)=>b.setAttribute('aria-pressed',Math.abs(D_PRESETS[i].v-S.d)<1e-9));
+
+ const p=power(S.k,S.n,S.icc,S.d,S.mode),need=kNeeded(S.n,S.icc,S.d,S.mode),c=ceiling(S.k,S.icc,S.d,S.mode);
+ const unit=two?' per group':'';
+ $('tPow').textContent=pct(p);
+ $('tPowS').textContent=S.k+' animals'+unit+', '+S.n+' cells each';
+ $('tNeed').textContent=need===Infinity?'>500':need;
+ $('tNeedS').textContent=(two?'animals per group':'animals')+' at '+S.n+' cells each'+(two&&need!==Infinity?' ('+2*need+' in total)':'');
+ $('tCeil').textContent=pct(c);
+ $('tCeilS').textContent='with '+S.k+' animals'+unit+', however many cells';
+
+ const tb=$('tbl').tBodies[0];tb.innerHTML='';
+ [...ICC_PRESETS].sort((a,b)=>a.v-b.v).forEach(pr=>{const tr=document.createElement('tr');if(Math.abs(pr.v-S.icc)<1e-9)tr.className='sel';
+   const nd=kNeeded(S.n,pr.v,S.d,S.mode);
+   tr.innerHTML='<td class="num">'+pr.label+'</td><td>'+pr.src+'</td><td class="num">'+(nd===Infinity?'>500':nd)+'</td><td class="num">'+pct(power(S.k,S.n,pr.v,S.d,S.mode))+'</td>';
+   tb.appendChild(tr);});
+ drawC1();drawC2();
+}
+render();
+
+try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',render);}catch(e){}
+new MutationObserver(render).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+</script>
+
+
+</body></html>
